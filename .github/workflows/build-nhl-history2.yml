@@ -1,0 +1,56 @@
+
+name: Build NHL historical participation tables
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_season:
+        description: "First season start year"
+        required: true
+        default: "2024"
+        type: string
+      end_season:
+        description: "Last season start year"
+        required: true
+        default: "2025"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run collection
+        env:
+          START_SEASON: ${{ inputs.start_season }}
+          END_SEASON: ${{ inputs.end_season }}
+        run: |
+          START_ID="${START_SEASON}$((START_SEASON + 1))"
+          END_ID="${END_SEASON}$((END_SEASON + 1))"
+          python nhl_historical_participation.py \
+            --start "$START_ID" \
+            --end "$END_ID" \
+            --outdir output
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nhl-historical-results
+          path: output/
+          if-no-files-found: warn
+          retention-days: 30
