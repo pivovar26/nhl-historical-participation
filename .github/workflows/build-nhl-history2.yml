@@ -41,7 +41,7 @@ jobs:
         run: |
           START_ID="${START_SEASON}$((START_SEASON + 1))"
           END_ID="${END_SEASON}$((END_SEASON + 1))"
-          python nhl_historical_participation.py \
+        python nhl_historical_participation_fixed.py  \
             --start "$START_ID" \
             --end "$END_ID" \
             --outdir output
